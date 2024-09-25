@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Surprise !</title>
+    <style>
+        /* Styles pour le modal et la page */
+        body {
+            font-family: Arial, sans-serif;
+        }
+        #modal {
+            display: none; /* Masquer le modal par défaut */
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            color: white;
+        }
+        video {
+            width: 50%;
+            height: auto;
+        }
+        .rose {
+            position: absolute;
+            top: -50px; /* Commencer au-dessus de l'écran */
+            width: 30px; /* Taille de la rose */
+            animation: fall 4s linear infinite;
+        }
+        @keyframes fall {
+            to {
+                transform: translateY(100vh); /* Tomber jusqu'en bas */
+            }
+        }
+    </style>
+</head>
+<body>
+
+<p>Dis le mot secret 🎤!</p>
+<!-- Modal caché par défaut -->
+<div id="modal">
+    <h2>Surprise ! 🎉</h2>
+    <div id="falling-roses"></div> <!-- Conteneur des roses -->
+    <video id="hiddenVideo" controls>
+        <source src="v12044gd0000cn74puvog65v8dt1vrrg.mp4" type="video/mp4">
+        Votre navigateur ne prend pas en charge la vidéo.
+    </video>
+</div>
+
+<audio id="annivAudio">
+    <source src="IMG_7548 (online-audio-converter.com)-[AudioTrimmer.com].mp3" type="audio/mp3">
+    Votre navigateur ne prend pas en charge l'audio.
+</audio>
+
+<script>
+    const secretWord = "yara"; // Mot secret
+    const hiddenVideo = document.getElementById('hiddenVideo');
+    const audio = document.getElementById('annivAudio');
+    const modal = document.getElementById('modal');
+    const fallingRosesContainer = document.getElementById('falling-roses');
+
+    // Fonction pour afficher la vidéo et lancer la lecture
+    function playHiddenVideo() {
+        console.log("Affichage de la vidéo cachée et lancement !");
+        hiddenVideo.style.display = 'block'; // Affiche la vidéo cachée
+        hiddenVideo.play(); // Démarre la vidéo cachée
+    }
+
+    // Fonction pour lancer l'audio
+    function playAudio() {
+        console.log("Lancement de l'audio !");
+        audio.play(); // Démarre l'audio
+    }
+
+    // Créer des roses qui tombent
+    function createFallingRoses() {
+        const numberOfRoses = 10; // Nombre de roses à faire tomber
+        for (let i = 0; i < numberOfRoses; i++) {
+            const rose = document.createElement('img');
+            rose.src = 'rose.png'; // Chemin de l'image de la rose
+            rose.classList.add('rose');
+            rose.style.left = Math.random() * 100 + 'vw'; // Position aléatoire
+            rose.style.animationDuration = (Math.random() * 2 + 2) + 's'; // Durée aléatoire
+            fallingRosesContainer.appendChild(rose);
+        }
+    }
+
+    // Fonction appelée après la détection du mot secret
+    function onSecretWordDetected() {
+        playHiddenVideo(); // Démarre la vidéo
+        playAudio(); // Démarre l'audio
+        modal.style.display = 'flex'; // Affiche le modal
+        createFallingRoses(); // Lance les roses qui tombent
+    }
+
+    // Fonction de reconnaissance vocale
+    function startRecognition() {
+        if (!('webkitSpeechRecognition' in window)) {
+            alert("Désolé, votre navigateur ne supporte pas la reconnaissance vocale.");
+            return;
+        }
+
+        const recognition = new webkitSpeechRecognition();
+        recognition.lang = "fr-FR"; // Définir la langue en français
+        recognition.interimResults = false; // Pas de résultats intermédiaires
+        recognition.maxAlternatives = 1; // Nombre maximum de mots alternatifs
+
+        recognition.onresult = function(event) {
+            const transcript = event.results[0][0].transcript.toLowerCase().trim();
+            console.log("Vous avez dit : " + transcript); // Affiche la transcription
+            
+            // Si le mot secret est détecté
+            if (transcript === secretWord) {
+                onSecretWordDetected();  // Ouvre le modal
+            } else {
+                alert("Ce n'est pas le bon mot ! Essayez encore.");
+            }
+        };
+
+        recognition.onerror = function(event) {
+            console.error("Erreur de reconnaissance vocale : ", event.error);
+        };
+
+        // Ne redémarre pas automatiquement
+        recognition.onend = function() {
+            console.log("La reconnaissance a pris fin.");
+            // Si tu veux relancer, décommenter la ligne suivante
+            // startRecognition();
+        };
+
+        // Démarrer la reconnaissance vocale
+        recognition.start();
+    }
+
+    // Démarrer la reconnaissance vocale après le chargement de la page
+    window.onload = function() {
+        startRecognition();
+    };
+</script>
+
+</body>
+</html>
